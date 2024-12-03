@@ -1,56 +1,181 @@
-﻿void Echo(string text, int deep)
-{
-	string modif = text;
+﻿using SFModuleFive.Models;
+using System.Text;
 
-	if (modif.Length > 2)
+static string GetTextFromConsoleReadLine(string text)
+{
+	Console.WriteLine(text);
+
+	string val = null;
+
+	while (true)
 	{
-		modif = modif.Remove(0, 2);
-		Console.BackgroundColor = (ConsoleColor) deep;
-		Console.WriteLine($"...{modif}");
+		val = Console.ReadLine();
+
+		if (string.IsNullOrWhiteSpace(val))
+		{
+			Console.WriteLine("Текст не должен быть пустым. Попробуйте ещё раз:");
+		}
+		else
+		{
+			break;
+		}
 	}
 
-	if (deep > 1)
-	{
-		Echo(modif, deep - 1);
-	}
+	return val;
 }
 
-static int PowerUp(int N, byte pow)
+static int GetIntFromConsoleReadLine(string text)
 {
-	if (pow == 0) return 1;
+	Console.WriteLine(text);
 
-	if (pow == 1)
+	int val;
+
+	while (true)
 	{
-		return N;
+		try
+		{
+			val = Convert.ToInt32(Console.ReadLine());
+			break;
+		}
+		catch
+		{
+			Console.WriteLine("Пожалуйста, введите целое число. Попробуйте ещё раз:");
+		}
 	}
-	else
+
+	return val;
+}
+
+static bool GetBoolFromConsoleReadLine(string text)
+{
+	Console.WriteLine(text);
+	Console.WriteLine("Y — да");
+	Console.WriteLine("N — нет");
+	Console.WriteLine("Введите ответ в виде символа ниже:");
+
+	bool val;
+	string? temp;
+
+	while (true)
 	{
-		return N * PowerUp(N, --pow);
+		temp = Console.ReadLine();
+
+		if (temp == "Y")
+		{
+			val = true;
+			break;
+		}
+		else if (temp == "N")
+		{
+			val = false;
+			break;
+		}
+		else
+		{
+			Console.WriteLine("Пожалуйста, введите ответ в виде символа, где Y = да; N = нет. Попробуйте ещё раз:");
+		}
 	}
+
+	return val;
 }
 
-void ExecutePowerUp()
+static List<string> GetListStringFromConsoleReadLine(string text)
 {
-	Console.WriteLine("Введите число:");
-	int number = Convert.ToInt32(Console.ReadLine());
+	Console.WriteLine(text);
 
-	Console.WriteLine("Введите степень:");
-	byte pow = Convert.ToByte(Console.ReadLine());
+	var val = new List<string>();
+	string temp;
 
-	Console.WriteLine($"Результат: {PowerUp(number, pow)}");
+	while (true)
+	{
+		Console.WriteLine("Чтобы прекратить ввод, введите \"D\"");
+		temp = GetTextFromConsoleReadLine($"Продолжите ввод. Уже указано: {val.Count}");
+		
+		if (temp.ToLower() == "d")
+		{
+			break;
+		}
+		else
+		{
+			val.Add(temp);
+		}
+	}
+
+	return val;
 }
 
-void ExecuteEcho()
+static User SetUser()
 {
-	Console.WriteLine("Введите текст:");
+	string name = GetTextFromConsoleReadLine("Введите имя:");
 
-	string text = Console.ReadLine();
+	string surName = GetTextFromConsoleReadLine("Введите фамилию:");
 
-	Console.WriteLine("Введите глубину эха:");
+	int age = GetIntFromConsoleReadLine("Введите возраст:");
 
-	int deep = Convert.ToInt32(Console.ReadLine());
+	bool isHavePet = GetBoolFromConsoleReadLine("У вас есть животные?");
 
-	Echo(text, deep);
+	int? petCount = null;
+
+	if (isHavePet) petCount = GetIntFromConsoleReadLine("Укажите количество животных:");
+
+	List<string>? petsNames = null;
+
+	if (petCount > 0) petsNames = GetListStringFromConsoleReadLine("Укажите имена ваших животных.");
+
+	int countOfFavoriteColors = GetIntFromConsoleReadLine("Введите количество ваших любимых цветов:");
+
+	List<string>? favoriteColors = null;
+
+	if (countOfFavoriteColors > 0) favoriteColors = GetListStringFromConsoleReadLine("Укажите ваши любимые цвета.");
+
+	var user = new User(name, surName, age, isHavePet, countOfFavoriteColors, favoriteColors, petCount, petsNames);
+
+	return user;
 }
 
-ExecutePowerUp();
+void ShowUser(User user)
+{
+	StringBuilder builder = new StringBuilder();
+
+	builder.AppendLine("Информация о пользователе:");
+	builder.AppendLine($"Имя: {user.Name}");
+	builder.AppendLine($"Фамилия: {user.SecondName}");
+	builder.AppendLine($"Возраст: {user.Age} лет");
+
+	builder.AppendLine($"Животные: {(user.IsHavePet ? "есть" : "нет" )}");
+
+	if (user.IsHavePet)
+	{
+		builder.AppendLine($"Количество животных: {user.PetCount}");
+	}
+
+	if (user.IsHavePet && user.PetsNames != null)
+	{
+		builder.Append($"Список кличек Ваших животных: ");
+		foreach (string petName in user.PetsNames)
+		{
+			builder.Append($"{petName} ");
+		}
+	}
+
+	builder.AppendLine($"\nЛюбимых цветов: {user.CountOfFavoriteColors}");
+
+	if (user.FavoriteColors != null)
+	{
+		builder.Append($"Список ваших любимых цветов: ");
+		foreach (string favoriteColor in user.FavoriteColors)
+		{
+			builder.Append($"{favoriteColor} ");
+		}
+	}
+
+	Console.Clear();
+
+	Console.WriteLine(builder.ToString());
+}
+
+var user = SetUser();
+
+ShowUser(user);
+
+Console.ReadLine();
